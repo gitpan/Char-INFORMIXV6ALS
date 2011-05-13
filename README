@@ -29,7 +29,7 @@ DESCRIPTION
       This software treats INFORMIX V6 ALS directly. Therefore, there is not
       UTF8 flag.
 
-INSTALLATION BY MAKE (for UNIX)
+INSTALLATION BY MAKE (for UNIX like system)
 
 To install this software by make, type the following:
 
