@@ -80,4 +80,3 @@ else {
 
 __END__
 
-http://search.cpan.org/dist/INFORMIX V6 ALS-Regexp/
