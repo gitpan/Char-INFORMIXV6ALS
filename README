@@ -429,5 +429,5 @@ See also code table:
 
 SEE ALSO
 
-perl, Sjis.pm
+perl, INFORMIXV6ALS.pm, Einformixv6als.pm, jacode.pl
 
