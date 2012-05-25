@@ -6,6 +6,7 @@ die "This file is not encoded in INFORMIX V6 ALS.\n" if q{‚ } ne "\x82\xa0";
 my $__FILE__ = __FILE__;
 
 use Char::INFORMIXV6ALS;
+$| = 1;
 print "1..51\n";
 
 my $chcp = '';
