@@ -13,10 +13,10 @@ BEGIN {
     if ($^X =~ / jperl /oxmsi) {
         die __FILE__, ": needs perl(not jperl) 5.00503 or later. (\$^X==$^X)";
     }
-    if (ord('A') == 193) {
+    if (CORE::ord('A') == 193) {
         die __FILE__, ": is not US-ASCII script (may be EBCDIC or EBCDIK script).";
     }
-    if (ord('A') != 0x41) {
+    if (CORE::ord('A') != 0x41) {
         die __FILE__, ": is not US-ASCII script (must be US-ASCII script).";
     }
 }
@@ -27,7 +27,7 @@ BEGIN {
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.82 $ =~ /(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.83 $ =~ /(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -300,71 +300,72 @@ sub INFORMIXV6ALS::rindex($$;$);
 # Character class
 #
 BEGIN { eval q{ use vars qw(
-    @anchor
-    @dot
-    @dot_s
-    @eD
-    @eS
-    @eW
-    @eH
-    @eV
-    @eR
-    @eN
-    @not_alnum
-    @not_alpha
-    @not_ascii
-    @not_blank
-    @not_cntrl
-    @not_digit
-    @not_graph
-    @not_lower
-    @not_lower_i
-    @not_print
-    @not_punct
-    @not_space
-    @not_upper
-    @not_upper_i
-    @not_word
-    @not_xdigit
-    @eb
-    @eB
+    $anchor
+    $dot
+    $dot_s
+    $eD
+    $eS
+    $eW
+    $eH
+    $eV
+    $eR
+    $eN
+    $not_alnum
+    $not_alpha
+    $not_ascii
+    $not_blank
+    $not_cntrl
+    $not_digit
+    $not_graph
+    $not_lower
+    $not_lower_i
+    $not_print
+    $not_punct
+    $not_space
+    $not_upper
+    $not_upper_i
+    $not_word
+    $not_xdigit
+    $eb
+    $eB
+    $matched
 ) } }
-@{Einformixv6als::anchor}      = qr{\G(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?};
-@{Einformixv6als::dot}         = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A])};
-@{Einformixv6als::dot_s}       = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
-@{Einformixv6als::eD}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9])};
+${Einformixv6als::anchor}      = qr{\G(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?};
+${Einformixv6als::dot}         = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A])};
+${Einformixv6als::dot_s}       = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
+${Einformixv6als::eD}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9])};
 
-@{Einformixv6als::eS}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0C\x0D\x20])};
+${Einformixv6als::eS}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0C\x0D\x20])};
 
 # Incompatible Changes
 # \s in regular expressions now matches a Vertical Tab (experimental)
 # http://search.cpan.org/~zefram/perl-5.17.0/pod/perldelta.pod
 
-# @{Einformixv6als::eS}        = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
+# ${Einformixv6als::eS}        = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
 
-@{Einformixv6als::eW}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9A-Z_a-z])};
-@{Einformixv6als::eH}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x20])};
-@{Einformixv6als::eV}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A\x0B\x0C\x0D])};
-@{Einformixv6als::eR}          = qr{(?:\x0D\x0A|[\x0A\x0D])};
-@{Einformixv6als::eN}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A])};
-@{Einformixv6als::not_alnum}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x5A\x61-\x7A])};
-@{Einformixv6als::not_alpha}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x41-\x5A\x61-\x7A])};
-@{Einformixv6als::not_ascii}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x00-\x7F])};
-@{Einformixv6als::not_blank}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x20])};
-@{Einformixv6als::not_cntrl}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x00-\x1F\x7F])};
-@{Einformixv6als::not_digit}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39])};
-@{Einformixv6als::not_graph}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x21-\x7F])};
-@{Einformixv6als::not_lower}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x61-\x7A])};
-@{Einformixv6als::not_lower_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
-@{Einformixv6als::not_print}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x20-\x7F])};
-@{Einformixv6als::not_punct}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E])};
-@{Einformixv6als::not_space}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
-@{Einformixv6als::not_upper}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x41-\x5A])};
-@{Einformixv6als::not_upper_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
-@{Einformixv6als::not_word}    = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x5A\x5F\x61-\x7A])};
-@{Einformixv6als::not_xdigit}  = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x46\x61-\x66])};
-@{Einformixv6als::eb}          = qr{(?:\A(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[0-9A-Z_a-z])|(?<=[0-9A-Z_a-z])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]|\z))};
-@{Einformixv6als::eB}          = qr{(?:(?<=[0-9A-Z_a-z])(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]))};
+${Einformixv6als::eW}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9A-Z_a-z])};
+${Einformixv6als::eH}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x20])};
+${Einformixv6als::eV}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A\x0B\x0C\x0D])};
+${Einformixv6als::eR}          = qr{(?:\x0D\x0A|[\x0A\x0D])};
+${Einformixv6als::eN}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A])};
+${Einformixv6als::not_alnum}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x5A\x61-\x7A])};
+${Einformixv6als::not_alpha}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x41-\x5A\x61-\x7A])};
+${Einformixv6als::not_ascii}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x00-\x7F])};
+${Einformixv6als::not_blank}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x20])};
+${Einformixv6als::not_cntrl}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x00-\x1F\x7F])};
+${Einformixv6als::not_digit}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39])};
+${Einformixv6als::not_graph}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x21-\x7F])};
+${Einformixv6als::not_lower}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x61-\x7A])};
+${Einformixv6als::not_lower_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
+${Einformixv6als::not_print}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x20-\x7F])};
+${Einformixv6als::not_punct}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E])};
+${Einformixv6als::not_space}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
+${Einformixv6als::not_upper}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x41-\x5A])};
+${Einformixv6als::not_upper_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
+${Einformixv6als::not_word}    = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x5A\x5F\x61-\x7A])};
+${Einformixv6als::not_xdigit}  = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x46\x61-\x66])};
+${Einformixv6als::eb}          = qr{(?:\A(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[0-9A-Z_a-z])|(?<=[0-9A-Z_a-z])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]|\z))};
+${Einformixv6als::eB}          = qr{(?:(?<=[0-9A-Z_a-z])(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]))};
 
 #
 # @ARGV wildcard globbing
@@ -868,7 +869,7 @@ sub Einformixv6als::fc(@) {
 }
 
 #
-# INFORMIX V6 ALS fold case lower case without parameter
+# INFORMIX V6 ALS fold case without parameter
 #
 sub Einformixv6als::fc_() {
     my $s = $_;
@@ -910,7 +911,7 @@ sub Einformixv6als::fc_() {
     # in Chapter 29. Pragmatic Modules
     # of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
 
-    @Einformixv6als::matched = (qr/(?{Einformixv6als::matched})/);
+    $Einformixv6als::matched = qr/(?{Einformixv6als::matched})/;
 }
 
 #
@@ -954,9 +955,11 @@ sub Einformixv6als::ignorecase(@) {
 
                         # escape character
                         for my $char (@charlist) {
+                            if (0) {
+                            }
 
                             # do not use quotemeta here
-                            if ($char =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
+                            elsif ($char =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
                                 $char = $1 . '\\' . $2;
                             }
                             elsif ($char =~ /\A [.|)] \z/oxms) {
@@ -993,9 +996,11 @@ sub Einformixv6als::ignorecase(@) {
 
                         # escape character
                         for my $char (@charlist) {
+                            if (0) {
+                            }
 
                             # do not use quotemeta here
-                            if ($char =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
+                            elsif ($char =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
                                 $char = $1 . '\\' . $2;
                             }
                             elsif ($char =~ /\A [.|)] \z/oxms) {
@@ -1036,8 +1041,11 @@ sub Einformixv6als::ignorecase(@) {
         for (my $i=0; $i <= $#char; $i++) {
             next if not defined $char[$i];
 
+            if (0) {
+            }
+
             # escape last octet of multiple-octet
-            if ($char[$i] =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
+            elsif ($char[$i] =~ /\A ([\x80-\xFF].*) ($metachar) \z/oxms) {
                 $char[$i] = $1 . '\\' . $2;
             }
 
@@ -1063,9 +1071,9 @@ sub classic_character_class($) {
     my($char) = @_;
 
     return {
-        '\D' => '@{Einformixv6als::eD}',
-        '\S' => '@{Einformixv6als::eS}',
-        '\W' => '@{Einformixv6als::eW}',
+        '\D' => '${Einformixv6als::eD}',
+        '\S' => '${Einformixv6als::eS}',
+        '\W' => '${Einformixv6als::eW}',
         '\d' => '[0-9]',
                  # \t  \n  \f  \r space
         '\s' => '[\x09\x0A\x0C\x0D\x20]',
@@ -1103,11 +1111,11 @@ sub classic_character_class($) {
 
         # (and so on)
 
-        '\H' => '@{Einformixv6als::eH}',
-        '\V' => '@{Einformixv6als::eV}',
+        '\H' => '${Einformixv6als::eH}',
+        '\V' => '${Einformixv6als::eV}',
         '\h' => '[\x09\x20]',
         '\v' => '[\x0A\x0B\x0C\x0D]',
-        '\R' => '@{Einformixv6als::eR}',
+        '\R' => '${Einformixv6als::eR}',
 
         # \N
         #
@@ -1115,7 +1123,7 @@ sub classic_character_class($) {
         # Character Classes and other Special Escapes
         # Any character but \n (experimental). Not affected by /s modifier
 
-        '\N' => '@{Einformixv6als::eN}',
+        '\N' => '${Einformixv6als::eN}',
 
         # \b \B
 
@@ -1128,10 +1136,10 @@ sub classic_character_class($) {
         # of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
 
         # '\b' => '(?:(?<=\A|\W)(?=\w)|(?<=\w)(?=\W|\z))',
-        '\b' => '@{Einformixv6als::eb}',
+        '\b' => '${Einformixv6als::eb}',
 
         # '\B' => '(?:(?<=\w)(?=\w)|(?<=\W)(?=\W))',
-        '\B' => '@{Einformixv6als::eB}',
+        '\B' => '${Einformixv6als::eB}',
 
     }->{$char} || '';
 }
@@ -1699,19 +1707,19 @@ sub _charlist {
             $char[$i] = hexchr($1);
         }
 
-        # \N{CHARNAME} --> N{CHARNAME}
-        elsif ($char[$i] =~ /\A \\ ( N\{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
-            $char[$i] = $1;
+        # \N{CHARNAME} --> N\{CHARNAME}
+        elsif ($char[$i] =~ /\A \\ (N) ( \{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
+            $char[$i] = $1 . '\\' . $2;
         }
 
-        # \p{PROPERTY} --> p{PROPERTY}
-        elsif ($char[$i] =~ /\A \\ ( p\{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
-            $char[$i] = $1;
+        # \p{PROPERTY} --> p\{PROPERTY}
+        elsif ($char[$i] =~ /\A \\ (p) ( \{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
+            $char[$i] = $1 . '\\' . $2;
         }
 
-        # \P{PROPERTY} --> P{PROPERTY}
-        elsif ($char[$i] =~ /\A \\ ( P\{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
-            $char[$i] = $1;
+        # \P{PROPERTY} --> P\{PROPERTY}
+        elsif ($char[$i] =~ /\A \\ (P) ( \{ ([^\x81-\x9F\xE0-\xFD0-9\}][^\x81-\x9F\xE0-\xFD\}]*) \} ) \z/oxms) {
+            $char[$i] = $1 . '\\' . $2;
         }
 
         # \p, \P, \X --> p, P, X
@@ -1750,15 +1758,15 @@ sub _charlist {
                 # '\s' => '[\x09\x0A\x0B\x0C\x0D\x20]',
 
                 '\w' => '[0-9A-Z_a-z]',
-                '\D' => '@{Einformixv6als::eD}',
-                '\S' => '@{Einformixv6als::eS}',
-                '\W' => '@{Einformixv6als::eW}',
+                '\D' => '${Einformixv6als::eD}',
+                '\S' => '${Einformixv6als::eS}',
+                '\W' => '${Einformixv6als::eW}',
 
-                '\H' => '@{Einformixv6als::eH}',
-                '\V' => '@{Einformixv6als::eV}',
+                '\H' => '${Einformixv6als::eH}',
+                '\V' => '${Einformixv6als::eV}',
                 '\h' => '[\x09\x20]',
                 '\v' => '[\x0A\x0B\x0C\x0D]',
-                '\R' => '@{Einformixv6als::eR}',
+                '\R' => '${Einformixv6als::eR}',
 
             }->{$1};
         }
@@ -1769,8 +1777,8 @@ sub _charlist {
 
                 '[:lower:]'   => '[\x41-\x5A\x61-\x7A]',
                 '[:upper:]'   => '[\x41-\x5A\x61-\x7A]',
-                '[:^lower:]'  => '@{Einformixv6als::not_lower_i}',
-                '[:^upper:]'  => '@{Einformixv6als::not_upper_i}',
+                '[:^lower:]'  => '${Einformixv6als::not_lower_i}',
+                '[:^upper:]'  => '${Einformixv6als::not_upper_i}',
 
             }->{$1};
         }
@@ -1791,20 +1799,20 @@ sub _charlist {
                 '[:upper:]'   => '[\x41-\x5A]',
                 '[:word:]'    => '[\x30-\x39\x41-\x5A\x5F\x61-\x7A]',
                 '[:xdigit:]'  => '[\x30-\x39\x41-\x46\x61-\x66]',
-                '[:^alnum:]'  => '@{Einformixv6als::not_alnum}',
-                '[:^alpha:]'  => '@{Einformixv6als::not_alpha}',
-                '[:^ascii:]'  => '@{Einformixv6als::not_ascii}',
-                '[:^blank:]'  => '@{Einformixv6als::not_blank}',
-                '[:^cntrl:]'  => '@{Einformixv6als::not_cntrl}',
-                '[:^digit:]'  => '@{Einformixv6als::not_digit}',
-                '[:^graph:]'  => '@{Einformixv6als::not_graph}',
-                '[:^lower:]'  => '@{Einformixv6als::not_lower}',
-                '[:^print:]'  => '@{Einformixv6als::not_print}',
-                '[:^punct:]'  => '@{Einformixv6als::not_punct}',
-                '[:^space:]'  => '@{Einformixv6als::not_space}',
-                '[:^upper:]'  => '@{Einformixv6als::not_upper}',
-                '[:^word:]'   => '@{Einformixv6als::not_word}',
-                '[:^xdigit:]' => '@{Einformixv6als::not_xdigit}',
+                '[:^alnum:]'  => '${Einformixv6als::not_alnum}',
+                '[:^alpha:]'  => '${Einformixv6als::not_alpha}',
+                '[:^ascii:]'  => '${Einformixv6als::not_ascii}',
+                '[:^blank:]'  => '${Einformixv6als::not_blank}',
+                '[:^cntrl:]'  => '${Einformixv6als::not_cntrl}',
+                '[:^digit:]'  => '${Einformixv6als::not_digit}',
+                '[:^graph:]'  => '${Einformixv6als::not_graph}',
+                '[:^lower:]'  => '${Einformixv6als::not_lower}',
+                '[:^print:]'  => '${Einformixv6als::not_print}',
+                '[:^punct:]'  => '${Einformixv6als::not_punct}',
+                '[:^space:]'  => '${Einformixv6als::not_space}',
+                '[:^upper:]'  => '${Einformixv6als::not_upper}',
+                '[:^word:]'   => '${Einformixv6als::not_word}',
+                '[:^xdigit:]' => '${Einformixv6als::not_xdigit}',
 
             }->{$1};
         }
@@ -4843,6 +4851,12 @@ sub INFORMIXV6ALS::reverse(@) {
         return CORE::reverse @_;
     }
     else {
+
+        # One of us once cornered Larry in an elevator and asked him what
+        # problem he was solving with this, but he looked as far off into
+        # the distance as he could in an elevator and said, "It seemed like
+        # a good idea at the time."
+
         return join '', CORE::reverse(join('',@_) =~ /\G ($q_char) /oxmsg);
     }
 }
