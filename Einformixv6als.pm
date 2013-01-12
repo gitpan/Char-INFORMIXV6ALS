@@ -3,7 +3,7 @@ package Einformixv6als;
 #
 # Einformixv6als - Run-time routines for INFORMIXV6ALS.pm
 #
-# Copyright (c) 2008, 2009, 2010, 2011, 2012 INABA Hitoshi <ina@cpan.org>
+# Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 INABA Hitoshi <ina@cpan.org>
 #
 ######################################################################
 
@@ -27,7 +27,7 @@ BEGIN {
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.84 $ =~ /(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.85 $ =~ /(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -87,14 +87,14 @@ BEGIN {
 
         my $ref = \*{$genpkg . $name};
         delete $$genpkg{$name};
-        $ref;
+        return $ref;
     }
 
     sub qualify ($;$) {
         my ($name) = @_;
         if (!ref($name) && (Einformixv6als::index($name, '::') == -1) && (Einformixv6als::index($name, "'") == -1)) {
             my $pkg;
-            my %global = map {$_ => 1} qw(ARGV ARGVOUT ENV INC SIG STDERR STDIN STDOUT);
+            my %global = map {$_ => 1} qw(ARGV ARGVOUT ENV INC SIG STDERR STDIN STDOUT DATA);
 
             # Global names: special character, "^xyz", or other.
             if ($name =~ /^(([^\x81-\x9F\xE0-\xFDa-z])|(\^[a-z_]+))\z/i || $global{$name}) {
@@ -107,7 +107,7 @@ BEGIN {
             }
             $name = $pkg . "::" . $name;
         }
-        $name;
+        return $name;
     }
 
     sub qualify_to_ref ($;$) {
@@ -118,9 +118,14 @@ BEGIN {
     }
 }
 
+# Column: local $@
+# in Chapter 9. Osaete okitai Perl no kiso
+# of ISBN 10: 4798119172 | ISBN 13: 978-4798119175 MODAN Perl NYUMON
+# (and so on)
+
 # use strict; if strict.pm exists
 BEGIN {
-    if (eval {CORE::require strict}) {
+    if (eval { local $@; CORE::require strict }) {
         strict::->import;
     }
 }
@@ -139,10 +144,10 @@ sub LOCK_UN() {8}
 sub LOCK_NB() {4}
 
 # instead of Carp.pm
-sub carp(@);
-sub croak(@);
-sub cluck(@);
-sub confess(@);
+sub carp;
+sub croak;
+sub cluck;
+sub confess;
 
 my $your_char = q{\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[\x00-\xFF]};
 
@@ -199,7 +204,7 @@ else {
 #
 # @ARGV wildcard globbing
 #
-sub import() {
+sub import {
 
     if ($^O =~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
         my @argv = ();
@@ -234,10 +239,28 @@ sub import() {
     }
 }
 
+# P.230 Care with Prototypes
+# in Chapter 6: Subroutines
+# of ISBN 0-596-00027-8 Programming Perl Third Edition.
+#
+# If you aren't careful, you can get yourself into trouble with prototypes.
+# But if you are careful, you can do a lot of neat things with them. This is
+# all very powerful, of course, and should only be used in moderation to make
+# the world a better place.
+
+# P.332 Care with Prototypes
+# in Chapter 7: Subroutines
+# of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
+#
+# If you aren't careful, you can get yourself into trouble with prototypes.
+# But if you are careful, you can do a lot of neat things with them. This is
+# all very powerful, of course, and should only be used in moderation to make
+# the world a better place.
+
 #
 # Prototypes of subroutines
 #
-sub unimport() {}
+sub unimport {}
 sub Einformixv6als::split(;$$$);
 sub Einformixv6als::tr($$$$;$);
 sub Einformixv6als::chop(@);
@@ -253,12 +276,12 @@ sub Einformixv6als::uc(@);
 sub Einformixv6als::uc_();
 sub Einformixv6als::fc(@);
 sub Einformixv6als::fc_();
-sub Einformixv6als::ignorecase(@);
-sub Einformixv6als::classic_character_class($);
-sub Einformixv6als::capture($);
+sub Einformixv6als::ignorecase;
+sub Einformixv6als::classic_character_class;
+sub Einformixv6als::capture;
 sub Einformixv6als::chr(;$);
 sub Einformixv6als::chr_();
-sub Einformixv6als::filetest(@);
+sub Einformixv6als::filetest;
 sub Einformixv6als::r(;*@);
 sub Einformixv6als::w(;*@);
 sub Einformixv6als::x(;*@);
@@ -285,7 +308,7 @@ sub Einformixv6als::B(;*@);
 sub Einformixv6als::M(;*@);
 sub Einformixv6als::A(;*@);
 sub Einformixv6als::C(;*@);
-sub Einformixv6als::filetest_(@);
+sub Einformixv6als::filetest_;
 sub Einformixv6als::r_();
 sub Einformixv6als::w_();
 sub Einformixv6als::x_();
@@ -328,6 +351,7 @@ sub Einformixv6als::telldir(*);
 sub INFORMIXV6ALS::ord(;$);
 sub INFORMIXV6ALS::ord_();
 sub INFORMIXV6ALS::reverse(@);
+sub INFORMIXV6ALS::getc(;*@);
 sub INFORMIXV6ALS::length(;$);
 sub INFORMIXV6ALS::substr($$;$$);
 sub INFORMIXV6ALS::index($$;$);
@@ -902,7 +926,7 @@ sub Einformixv6als::fc_() {
 
     my $last_s_matched = 0;
 
-    sub Einformixv6als::capture($) {
+    sub Einformixv6als::capture {
         if ($last_s_matched and ($_[0] =~ /\A [1-9][0-9]* \z/oxms)) {
             return $_[0] + 1;
         }
@@ -933,7 +957,7 @@ sub Einformixv6als::fc_() {
 #
 # INFORMIX V6 ALS regexp ignore case modifier
 #
-sub Einformixv6als::ignorecase(@) {
+sub Einformixv6als::ignorecase {
 
     my @string = @_;
     my $metachar = qr/[\@\\|[\]{]/oxms;
@@ -1083,7 +1107,7 @@ sub Einformixv6als::ignorecase(@) {
 #
 # classic character class ( \D \S \W \d \s \w \C \X \H \V \h \v \R \N \b \B )
 #
-sub classic_character_class($) {
+sub Einformixv6als::classic_character_class {
     my($char) = @_;
 
     return {
@@ -1429,7 +1453,7 @@ sub _octets {
         my($z1) = unpack 'C', $_[1];
 
         if ($a1 > $z1) {
-            croak 'Invalid [] range in regexp (ord(A) > ord(B)) ' . '\x' . unpack('H*',$a1) . '-\x' . unpack('H*',$z1);
+            croak 'Invalid [] range in regexp (CORE::ord(A) > CORE::ord(B)) ' . '\x' . unpack('H*',$a1) . '-\x' . unpack('H*',$z1);
         }
 
         if ($a1 == $z1) {
@@ -1864,7 +1888,7 @@ sub _charlist {
             }
             elsif (CORE::length($char[$i-1]) == CORE::length($char[$i+1])) {
                 if ($char[$i-1] gt $char[$i+1]) {
-                    croak 'Invalid [] range in regexp (ord(A) > ord(B)) ' . '\x' . unpack('H*',$char[$i-1]) . '-\x' . unpack('H*',$char[$i+1]);
+                    croak 'Invalid [] range in regexp (CORE::ord(A) > CORE::ord(B)) ' . '\x' . unpack('H*',$char[$i-1]) . '-\x' . unpack('H*',$char[$i+1]);
                 }
             }
 
@@ -2356,7 +2380,7 @@ sub Einformixv6als::chr_() {
 #
 # INFORMIX V6 ALS stacked file test expr
 #
-sub Einformixv6als::filetest(@) {
+sub Einformixv6als::filetest {
 
     my $file     = pop @_;
     my $filetest = substr(pop @_, 1);
@@ -2364,7 +2388,7 @@ sub Einformixv6als::filetest(@) {
     unless (eval qq{Einformixv6als::$filetest(\$file)}) {
         return '';
     }
-    for my $filetest (reverse @_) {
+    for my $filetest (CORE::reverse @_) {
         unless (eval qq{ $filetest _ }) {
             return '';
         }
@@ -3336,14 +3360,14 @@ sub Einformixv6als::C(;*@) {
 #
 # INFORMIX V6 ALS stacked file test $_
 #
-sub Einformixv6als::filetest_(@) {
+sub Einformixv6als::filetest_ {
 
     my $filetest = substr(pop @_, 1);
 
     unless (eval qq{Einformixv6als::${filetest}_}) {
         return '';
     }
-    for my $filetest (reverse @_) {
+    for my $filetest (CORE::reverse @_) {
         unless (eval qq{ $filetest _ }) {
             return '';
         }
@@ -3372,7 +3396,45 @@ sub Einformixv6als::r_() {
             }
         }
     }
-    return;
+
+# 2010-01-26 The difference of "return;" and "return undef;" 
+# http://d.hatena.ne.jp/gfx/20100126/1264474754
+#
+# "Perl Best Practices" recommends to use "return;"*1 to return nothing, but
+# it might be wrong in some cases. If you use this idiom for those functions
+# which are expected to return a scalar value, e.g. searching functions, the
+# user of those functions will be surprised at what they return in list
+# context, an empty list - note that many functions and all the methods
+# evaluate their arguments in list context. You'd better to use "return undef;"
+# for such scalar functions.
+#
+#     sub search_something {
+#         my($arg) = @_;
+#         # search_something...
+#         if(defined $found){
+#             return $found;
+#         }
+#         return; # XXX: you'd better to "return undef;"
+#     }
+#
+#     # ...
+#
+#     # you'll get what you want, but ...
+#     my $something = search_something($source);
+#
+#     # you won't get what you want here.
+#     # @_ for doit() is (-foo => $opt), not (undef, -foo => $opt).
+#     $obj->doit(search_something($source), -option=> $optval);
+#
+#     # you have to use the "scalar" operator in such a case.
+#     $obj->doit(scalar search_something($source), ...);
+#
+# *1Fit returns an empty list in list context, or returns undef in scalar
+#     context
+#
+# (and so on)
+
+    return undef;
 }
 
 #
@@ -3396,7 +3458,7 @@ sub Einformixv6als::w_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3422,7 +3484,7 @@ sub Einformixv6als::x_() {
             return '';
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3446,7 +3508,7 @@ sub Einformixv6als::o_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3470,7 +3532,7 @@ sub Einformixv6als::R_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3494,7 +3556,7 @@ sub Einformixv6als::W_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3520,7 +3582,7 @@ sub Einformixv6als::X_() {
             return '';
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3544,7 +3606,7 @@ sub Einformixv6als::O_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3568,7 +3630,7 @@ sub Einformixv6als::e_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3592,7 +3654,7 @@ sub Einformixv6als::z_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3616,7 +3678,7 @@ sub Einformixv6als::s_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3640,7 +3702,7 @@ sub Einformixv6als::f_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3654,7 +3716,7 @@ sub Einformixv6als::d_() {
     elsif (_MSWin32_5Cended_path($_)) {
         return -d "$_/." ? 1 : '';
     }
-    return;
+    return undef;
 }
 
 #
@@ -3678,7 +3740,7 @@ sub Einformixv6als::l_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3702,7 +3764,7 @@ sub Einformixv6als::p_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3726,7 +3788,7 @@ sub Einformixv6als::S_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3750,7 +3812,7 @@ sub Einformixv6als::b_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3774,7 +3836,7 @@ sub Einformixv6als::c_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3798,7 +3860,7 @@ sub Einformixv6als::u_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3822,7 +3884,7 @@ sub Einformixv6als::g_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3844,13 +3906,13 @@ sub Einformixv6als::T_() {
     my $T = 1;
 
     if (-d $_ or -d "$_/.") {
-        return;
+        return undef;
     }
     my $fh = gensym();
     if (_open_r($fh, $_)) {
     }
     else {
-        return;
+        return undef;
     }
 
     if (sysread $fh, my $block, 512) {
@@ -3880,13 +3942,13 @@ sub Einformixv6als::B_() {
     my $B = '';
 
     if (-d $_ or -d "$_/.") {
-        return;
+        return undef;
     }
     my $fh = gensym();
     if (_open_r($fh, $_)) {
     }
     else {
-        return;
+        return undef;
     }
 
     if (sysread $fh, my $block, 512) {
@@ -3930,7 +3992,7 @@ sub Einformixv6als::M_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3955,7 +4017,7 @@ sub Einformixv6als::A_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -3980,7 +4042,7 @@ sub Einformixv6als::C_() {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -4312,7 +4374,7 @@ sub Einformixv6als::lstat(*) {
             }
         }
     }
-    return;
+    return wantarray ? () : undef;
 }
 
 #
@@ -4340,7 +4402,7 @@ sub Einformixv6als::lstat_() {
             }
         }
     }
-    return;
+    return wantarray ? () : undef;
 }
 
 #
@@ -4357,7 +4419,7 @@ sub Einformixv6als::opendir(*$) {
             return 1;
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -4396,7 +4458,7 @@ sub Einformixv6als::stat(*) {
             }
         }
     }
-    return;
+    return wantarray ? () : undef;
 }
 
 #
@@ -4428,7 +4490,7 @@ sub Einformixv6als::stat_() {
             }
         }
     }
-    return;
+    return wantarray ? () : undef;
 }
 
 #
@@ -4453,7 +4515,12 @@ sub Einformixv6als::unlink(@) {
             }
 
             # internal command 'del' of command.com or cmd.exe
-            CORE::system 'del', $file, '2>NUL';
+            if ($ENV{'COMSPEC'} =~ / \\COMMAND\.COM \z/oxmsi) {
+                CORE::system 'del', $file;
+            }
+            else {
+                CORE::system 'del', $file, '2>NUL';
+            }
 
             my $fh = gensym();
             if (_open_r($fh, $_)) {
@@ -4558,7 +4625,7 @@ sub _MSWin32_5Cended_path {
             }
         }
     }
-    return;
+    return undef;
 }
 
 #
@@ -4680,10 +4747,9 @@ ITER_DO:
                     }
                 }
 
-                if (eval {CORE::require strict}) {
+                if (eval { local $@; CORE::require strict }) {
                     strict::->unimport;
                 }
-                local $@;
                 $result = scalar eval $script;
 
                 last ITER_DO;
@@ -4693,10 +4759,10 @@ ITER_DO:
 
     if ($@) {
         $INC{$filename} = undef;
-        return;
+        return undef;
     }
     elsif (not $result) {
-        return;
+        return undef;
     }
     else {
         $INC{$filename} = $realfilename;
@@ -4888,10 +4954,9 @@ ITER_REQUIRE:
                     }
                 }
 
-                if (eval {CORE::require strict}) {
+                if (eval { local $@; CORE::require strict }) {
                     strict::->unimport;
                 }
-                local $@;
                 $result = scalar eval $script;
 
                 last ITER_REQUIRE;
@@ -5024,6 +5089,27 @@ sub INFORMIXV6ALS::reverse(@) {
 }
 
 #
+# INFORMIX V6 ALS getc (with parameter, without parameter)
+#
+sub INFORMIXV6ALS::getc(;*@) {
+
+    my $fh = @_ ? qualify_to_ref(shift) : \*STDIN;
+    croak 'Too many arguments for INFORMIXV6ALS::getc' if @_ and not wantarray;
+
+    my @length = sort { $a <=> $b } keys %range_tr;
+    my $getc = '';
+    for my $length ($length[0] .. $length[-1]) {
+        $getc .= CORE::getc($fh);
+        if (exists $range_tr{CORE::length($getc)}) {
+            if ($getc =~ /\A ${Einformixv6als::dot_s} \z/oxms) {
+                return wantarray ? ($getc,@_) : $getc;
+            }
+        }
+    }
+    return wantarray ? ($getc,@_) : $getc;
+}
+
+#
 # INFORMIX V6 ALS length by character
 #
 sub INFORMIXV6ALS::length(;$) {
@@ -5120,7 +5206,7 @@ sub INFORMIXV6ALS::rindex($$;$) {
 #
 # instead of Carp::carp
 #
-sub carp(@) {
+sub carp {
     my($package,$filename,$line) = caller(1);
     print STDERR "@_ at $filename line $line.\n";
 }
@@ -5128,7 +5214,7 @@ sub carp(@) {
 #
 # instead of Carp::croak
 #
-sub croak(@) {
+sub croak {
     my($package,$filename,$line) = caller(1);
     print STDERR "@_ at $filename line $line.\n";
     die "\n";
@@ -5137,14 +5223,14 @@ sub croak(@) {
 #
 # instead of Carp::cluck
 #
-sub cluck(@) {
+sub cluck {
     my $i = 0;
     my @cluck = ();
     while (my($package,$filename,$line,$subroutine) = caller($i)) {
         push @cluck, "[$i] $filename($line) $package::$subroutine\n";
         $i++;
     }
-    print STDERR reverse @cluck;
+    print STDERR CORE::reverse @cluck;
     print STDERR "\n";
     carp @_;
 }
@@ -5152,14 +5238,14 @@ sub cluck(@) {
 #
 # instead of Carp::confess
 #
-sub confess(@) {
+sub confess {
     my $i = 0;
     my @confess = ();
     while (my($package,$filename,$line,$subroutine) = caller($i)) {
         push @confess, "[$i] $filename($line) $package::$subroutine\n";
         $i++;
     }
-    print STDERR reverse @confess;
+    print STDERR CORE::reverse @confess;
     print STDERR "\n";
     croak @_;
 }
@@ -5811,6 +5897,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
   # absolute path
   @abspath_file = split(/\n/,`dir /s /b wildcard\\here*.txt 2>NUL`);
+
+  # on COMMAND.COM
+  @relpath_file = split(/\n/,`dir /b wildcard\\here*.txt`);
+  @abspath_file = split(/\n/,`dir /s /b wildcard\\here*.txt`);
 
 =item Statistics about link
 
