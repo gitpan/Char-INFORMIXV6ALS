@@ -28,7 +28,7 @@ BEGIN {
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.87 $ =~ /(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.88 $ =~ /(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -362,7 +362,6 @@ sub Char::INFORMIXV6ALS::rindex($$;$);
 # Character class
 #
 BEGIN { eval q{ use vars qw(
-    $anchor
     $dot
     $dot_s
     $eD
@@ -390,9 +389,133 @@ BEGIN { eval q{ use vars qw(
     $not_xdigit
     $eb
     $eB
+) } }
+
+BEGIN { eval q{ use vars qw(
+    $anchor
     $matched
 ) } }
-${Char::Einformixv6als::anchor}      = qr{\G(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?};
+${Char::Einformixv6als::anchor}      = qr{\G(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?}oxms;
+
+# Quantifiers
+#   {n,m}  ---  Match at least n but not more than m times
+#
+# n and m are limited to non-negative integral values less than a
+# preset limit defined when perl is built. This is usually 32766 on
+# the most common platforms.
+#
+# The following code is an attempt to solve the above limitations
+# in a multi-byte anchoring.
+
+# avoid "Segmentation fault" and "Error: Parse exception"
+if (($] >= 5.010) or
+    (defined($ActivePerl::VERSION) and ($ActivePerl::VERSION > 800)) or
+    (($^O eq 'MSWin32') and ($] =~ /\A 5\.006/oxms))
+) {
+    my $sbcs = ''; # Single Byte Character Set
+    for my $range (@{ $range_tr{1} }) {
+        $sbcs .= sprintf('\\x%02X-\\x%02X', $range->[0], $range->[-1]);
+    }
+
+    # GB18030 encoding
+    if (__PACKAGE__ =~ / \b Egb18030 \z/oxms) {
+        ${Char::Einformixv6als::anchor_SADAHIRO_Tomoyuki_2002_01_17} =
+        qr{\G(?(?=.{0,32766}\z)(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?|(?(?=[$sbcs]+\z).*?|(?:.*?[^\x30-\x39\x81-\xFE](?:[\x30-\x39]|[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE]{2})*?)))}oxms;
+#       qr{
+#          \G # (1), (2)
+#            (? # (3)
+#              (?=.{0,32766}\z) # (4)
+#                              (?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?| # (5)
+#                                                                                          (?(?=[$sbcs]+\z) # (6)
+#                                                                                                          .*?| #(7)
+#                                                                                                              (?:.*?[^\x30-\x39\x81-\xFE](?:[\x30-\x39]|[\x81-\xFE][\x30-\x39][\x81-\xFE][\x30-\x39]|[\x81-\xFE]{2})*?) # (8)
+#                                                                                                                                                                                                                       ))}oxms;
+    }
+
+    # other encoding
+    else {
+        my $tbcs_1st = ''; # 1st octet of Triple Byte Character Set
+        if (exists($range_tr{3}) and not exists($range_tr{4})) {
+            for my $range (@{ $range_tr{3} }) {
+                if ($range->[0] != $range->[-1]) {
+                    $tbcs_1st .= sprintf('\\x%02X-\\x%02X', $range->[0], $range->[-1]);
+                }
+                else {
+                    $tbcs_1st .= sprintf('\\x%02X',         $range->[0]);
+                }
+            }
+            $tbcs_1st = "[$tbcs_1st]?";
+        }
+
+        ${Char::Einformixv6als::anchor_SADAHIRO_Tomoyuki_2002_01_17} =
+        qr{\G(?(?=.{0,32766}\z)(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?|(?(?=[$sbcs]+\z).*?|(?:.*?[$sbcs](?:$tbcs_1st[^$sbcs]{2})*?)))}oxms;
+#       qr{
+#          \G # (1), (2)
+#            (? # (3)
+#              (?=.{0,32766}\z) # (4)
+#                              (?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])*?| # (5)
+#                                                                                          (?(?=[$sbcs]+\z) # (6)
+#                                                                                                          .*?| #(7)
+#                                                                                                              (?:.*?[$sbcs](?:$tbcs_1st[^$sbcs]{2})*?) # (8)
+#                                                                                                                                                      ))}oxms;
+    }
+
+    # avoid: Complex regular subexpression recursion limit (32766) exceeded at here.
+    local $^W = 0;
+
+    if (((('A' x 32768).'B') !~ / ${Char::Einformixv6als::anchor}                              B /oxms) and
+        ((('A' x 32768).'B') =~ / ${Char::Einformixv6als::anchor_SADAHIRO_Tomoyuki_2002_01_17} B /oxms)
+    ) {
+        ${Char::Einformixv6als::anchor} = ${Char::Einformixv6als::anchor_SADAHIRO_Tomoyuki_2002_01_17};
+    }
+}
+
+# (1)
+# P.128 Start of match (or end of previous match): \G
+# P.130 Advanced Use of \G with Perl
+# in Chapter3: Over view of Regular Expression Features and Flavors
+# of ISBN 0-596-00289-0 Mastering Regular Expressions, Second edition
+
+# (2)
+# P.255 Use leading anchors
+# P.256 Expose ^ and \G at the front of expressions
+# in Chapter6: Crafting an Efficient Expression
+# of ISBN 0-596-00289-0 Mastering Regular Expressions, Second edition
+
+# (3)
+# P.138 Conditional: (? if then| else)
+# in Chapter3: Over view of Regular Expression Features and Flavors
+# of ISBN 0-596-00289-0 Mastering Regular Expressions, Second edition
+
+# (4)
+# perlre
+# http://perldoc.perl.org/perlre.html
+# The "*" quantifier is equivalent to {0,} , the "+" quantifier to {1,} ,
+# and the "?" quantifier to {0,1} . n and m are limited to non-negative
+# integral values less than a preset limit defined when perl is built.
+# This is usually 32766 on the most common platforms. The actual limit
+# can be seen in the error message generated by code such as this:
+#  $_ **= $_ , / {$_} / for 2 .. 42;
+
+# (5)
+# P.1023 Multiple-Byte Anchoring
+# in Appendix W Perl Code Examples
+# of ISBN 1-56592-224-7 CJKV Information Processing
+
+# (6)
+# if string has only SBCS (Single Byte Character Set)
+
+# (7)
+# then .*? (isn't limited to 32766)
+
+# (8)
+# else INFORMIX V6 ALS::Regexp::Const (SADAHIRO Tomoyuki)
+# http://homepage1.nifty.com/nomenclator/perl/shiftjis.htm#long
+# http://search.cpan.org/~sadahiro/INFORMIX V6 ALS-Regexp/
+# $PadA  = '  (?:\A|                                           [\x00-\x80\xA0-\xDF])(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC]{2})*?';
+# $PadG  = '\G(?:                                |[\x00-\xFF]*?[\x00-\x80\xA0-\xDF])(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC]{2})*?';
+# $PadGA = '\G(?:\A|(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC]{2})+?|[\x00-\xFF]*?[\x00-\x80\xA0-\xDF] (?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC]{2})*?)';
+
 ${Char::Einformixv6als::dot}         = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x0A])};
 ${Char::Einformixv6als::dot_s}       = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
 ${Char::Einformixv6als::eD}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9])};
@@ -428,6 +551,35 @@ ${Char::Einformixv6als::not_word}    = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x
 ${Char::Einformixv6als::not_xdigit}  = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x46\x61-\x66])};
 ${Char::Einformixv6als::eb}          = qr{(?:\A(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[0-9A-Z_a-z])|(?<=[0-9A-Z_a-z])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]|\z))};
 ${Char::Einformixv6als::eB}          = qr{(?:(?<=[0-9A-Z_a-z])(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]))};
+
+# avoid: Name "Char::Einformixv6als::foo" used only once: possible typo at here.
+${Char::Einformixv6als::dot}         = ${Char::Einformixv6als::dot};
+${Char::Einformixv6als::dot_s}       = ${Char::Einformixv6als::dot_s};
+${Char::Einformixv6als::eD}          = ${Char::Einformixv6als::eD};
+${Char::Einformixv6als::eS}          = ${Char::Einformixv6als::eS};
+${Char::Einformixv6als::eW}          = ${Char::Einformixv6als::eW};
+${Char::Einformixv6als::eH}          = ${Char::Einformixv6als::eH};
+${Char::Einformixv6als::eV}          = ${Char::Einformixv6als::eV};
+${Char::Einformixv6als::eR}          = ${Char::Einformixv6als::eR};
+${Char::Einformixv6als::eN}          = ${Char::Einformixv6als::eN};
+${Char::Einformixv6als::not_alnum}   = ${Char::Einformixv6als::not_alnum};
+${Char::Einformixv6als::not_alpha}   = ${Char::Einformixv6als::not_alpha};
+${Char::Einformixv6als::not_ascii}   = ${Char::Einformixv6als::not_ascii};
+${Char::Einformixv6als::not_blank}   = ${Char::Einformixv6als::not_blank};
+${Char::Einformixv6als::not_cntrl}   = ${Char::Einformixv6als::not_cntrl};
+${Char::Einformixv6als::not_digit}   = ${Char::Einformixv6als::not_digit};
+${Char::Einformixv6als::not_graph}   = ${Char::Einformixv6als::not_graph};
+${Char::Einformixv6als::not_lower}   = ${Char::Einformixv6als::not_lower};
+${Char::Einformixv6als::not_lower_i} = ${Char::Einformixv6als::not_lower_i};
+${Char::Einformixv6als::not_print}   = ${Char::Einformixv6als::not_print};
+${Char::Einformixv6als::not_punct}   = ${Char::Einformixv6als::not_punct};
+${Char::Einformixv6als::not_space}   = ${Char::Einformixv6als::not_space};
+${Char::Einformixv6als::not_upper}   = ${Char::Einformixv6als::not_upper};
+${Char::Einformixv6als::not_upper_i} = ${Char::Einformixv6als::not_upper_i};
+${Char::Einformixv6als::not_word}    = ${Char::Einformixv6als::not_word};
+${Char::Einformixv6als::not_xdigit}  = ${Char::Einformixv6als::not_xdigit};
+${Char::Einformixv6als::eb}          = ${Char::Einformixv6als::eb};
+${Char::Einformixv6als::eB}          = ${Char::Einformixv6als::eB};
 
 #
 # INFORMIX V6 ALS split
@@ -4629,7 +4781,11 @@ sub Char::Einformixv6als::chdir(;$) {
             # Basic knowledge of DynaLoader
             # http://blog.64p.org/entry/20090313/1236934042
 
-            if (($^O eq 'MSWin32') and ($ENV{'PROCESSOR_ARCHITECTURE'} eq 'x86') and eval(q{CORE::require 'Dyna'.'Loader'})) {
+            if (($] =~ /^5\.006/oxms)                     and
+                ($^O eq 'MSWin32')                        and
+                ($ENV{'PROCESSOR_ARCHITECTURE'} eq 'x86') and
+                eval(q{CORE::require 'Dyna'.'Loader'})
+            ) {
                 my $x86 = join('',
 
                     # PUSH Iv
@@ -4660,6 +4816,46 @@ sub Char::Einformixv6als::chdir(;$) {
                 }
             }
         }
+
+# COMMAND.COM's unhelpful tips:
+# Displays a list of files and subdirectories in a directory.
+# http://www.lagmonster.org/docs/DOS7/z-dir.html
+#
+# Syntax:
+#
+#   DIR [drive:] [path] [filename] [/Switches]
+#
+#   /Z Long file names are not displayed in the file listing
+#
+#  Limitations
+#   The undocumented /Z switch (no long names) would appear to
+#   have been not fully developed and has a couple of problems:
+#
+#  1. It will only work if:
+#   There is no path specified (ie. for the current directory in
+#   the current drive)
+#   The path is specified as the root directory of any drive
+#   (eg. C:\, D:\, etc.)
+#   The path is specified as the current directory of any drive
+#   by using the drive letter only (eg. C:, D:, etc.)
+#   The path is specified as the parent directory using the ..
+#   notation (eg. DIR .. /Z)
+#   Any other syntax results in a "File Not Found" error message.
+#
+#  2. The /Z switch is compatable with the /S switch to show
+#   subdirectories (as long as the above rules are followed) and
+#   all the files are shown with short names only. The
+#   subdirectories are also shown with short names only. However,
+#   the header for each subdirectory after the first level gives
+#   the subdirectory's long name.
+#
+#  3. The /Z switch is also compatable with the /B switch to give
+#   a simple list of files with short names only. When used with
+#   the /S switch as well, all files are listed with their full
+#   paths. The file names themselves are all in short form, and
+#   the path of those files in the current directory are in short
+#   form, but the paths of any files in subdirectories are in
+#   long filename form.
 
         my $shortdir = '';
         my $i = 0;

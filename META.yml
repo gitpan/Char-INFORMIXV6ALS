@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name: INFORMIXV6ALS
 abstract: Source code filter for INFORMIX V6 ALS script (Imitation JPerl)
-version: 0.87
+version: 0.88
 author:
   - INABA Hitoshi <ina@cpan.org>
 license: perl
