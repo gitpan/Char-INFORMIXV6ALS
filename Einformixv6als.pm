@@ -8,7 +8,8 @@ package Einformixv6als;
 # Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 INABA Hitoshi <ina@cpan.org>
 ######################################################################
 
-use 5.00503;
+use 5.00503;    # Galapagos Consensus 1998 for primetools
+# use 5.008001; # Lancaster Consensus 2013 for toolchains
 
 BEGIN {
     if ($^X =~ / jperl /oxmsi) {
@@ -28,7 +29,7 @@ BEGIN {
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.89 $ =~ /(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.90 $ =~ /(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -359,6 +360,16 @@ sub INFORMIXV6ALS::index($$;$);
 sub INFORMIXV6ALS::rindex($$;$);
 
 #
+# Regexp work
+#
+BEGIN { eval q{ use vars qw(
+    $INFORMIXV6ALS::re_a
+    $INFORMIXV6ALS::re_t
+    $INFORMIXV6ALS::re_n
+    $INFORMIXV6ALS::re_r
+) } }
+
+#
 # Character class
 #
 BEGIN { eval q{ use vars qw(
@@ -528,13 +539,12 @@ ${Einformixv6als::dot}         = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0
 ${Einformixv6als::dot_s}       = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
 ${Einformixv6als::eD}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9])};
 
-${Einformixv6als::eS}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0C\x0D\x20])};
-
-# Incompatible Changes
-# \s in regular expressions now matches a Vertical Tab (experimental)
-# http://search.cpan.org/~zefram/perl-5.17.0/pod/perldelta.pod
-
+# Vertical tabs are now whitespace
+# \s in a regex now matches a vertical tab in all circumstances.
+# http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#Vertical_tabs_are_now_whitespace
+# ${Einformixv6als::eS}        = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A    \x0C\x0D\x20])};
 # ${Einformixv6als::eS}        = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
+${Einformixv6als::eS}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\s])};
 
 ${Einformixv6als::eW}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD0-9A-Z_a-z])};
 ${Einformixv6als::eH}          = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x20])};
@@ -552,7 +562,7 @@ ${Einformixv6als::not_lower}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0
 ${Einformixv6als::not_lower_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
 ${Einformixv6als::not_print}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x20-\x7F])};
 ${Einformixv6als::not_punct}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E])};
-${Einformixv6als::not_space}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x09\x0A\x0B\x0C\x0D\x20])};
+${Einformixv6als::not_space}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\s\x0B])};
 ${Einformixv6als::not_upper}   = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x41-\x5A])};
 ${Einformixv6als::not_upper_i} = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD])};
 ${Einformixv6als::not_word}    = qr{(?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD\x30-\x39\x41-\x5A\x5F\x61-\x7A])};
@@ -635,13 +645,22 @@ sub Einformixv6als::split(;$$$) {
     }
 
     # if $limit is negative, it is treated as if an arbitrarily large $limit has been specified
-    if ((not defined $limit) or ($limit <= 0)) {
+    elsif ((not defined $limit) or ($limit <= 0)) {
+        if (0) {
+        }
+
+        # split's first argument is more consistently interpreted
+        #
+        # After some changes earlier in v5.17, split's behavior has been simplified:
+        # if the PATTERN argument evaluates to a string containing one space, it is
+        # treated the way that a literal string containing one space once was.
+        # http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#split's_first_argument_is_more_consistently_interpreted
 
         # if $pattern is also omitted or is the literal space, " ", the function splits
         # on whitespace, /\s+/, after skipping any leading whitespace
         # (and so on)
 
-        if ((not defined $pattern) or ($pattern eq ' ')) {
+        elsif ((not defined $pattern) or ($pattern eq ' ')) {
             $string =~ s/ \A \s+ //oxms;
 
             # P.1024 Appendix W.10 Multibyte Processing
@@ -671,6 +690,8 @@ sub Einformixv6als::split(;$$$) {
 
         elsif ('' =~ / \A $pattern \z /xms) {
             my $last_subexpression_offsets = _last_subexpression_offsets($pattern);
+
+            #                                 V
             while ($string =~ s/\A((?:$q_char)+?)$pattern//m) {
                 local $@;
                 for (my $digit=1; $digit <= ($last_subexpression_offsets + 1); $digit++) {
@@ -681,6 +702,8 @@ sub Einformixv6als::split(;$$$) {
 
         else {
             my $last_subexpression_offsets = _last_subexpression_offsets($pattern);
+
+            #                                 V
             while ($string =~ s/\A((?:$q_char)*?)$pattern//m) {
                 local $@;
                 for (my $digit=1; $digit <= ($last_subexpression_offsets + 1); $digit++) {
@@ -691,7 +714,9 @@ sub Einformixv6als::split(;$$$) {
     }
 
     else {
-        if ((not defined $pattern) or ($pattern eq ' ')) {
+        if (0) {
+        }
+        elsif ((not defined $pattern) or ($pattern eq ' ')) {
             $string =~ s/ \A \s+ //oxms;
             while ((--$limit > 0) and (CORE::length($string) > 0)) {
                 if ($string =~ s/\A((?:$q_char)*?)\s+//m) {
@@ -705,6 +730,8 @@ sub Einformixv6als::split(;$$$) {
         elsif ('' =~ / \A $pattern \z /xms) {
             my $last_subexpression_offsets = _last_subexpression_offsets($pattern);
             while ((--$limit > 0) and (CORE::length($string) > 0)) {
+
+                #                              V
                 if ($string =~ s/\A((?:$q_char)+?)$pattern//m) {
                     local $@;
                     for (my $digit=1; $digit <= ($last_subexpression_offsets + 1); $digit++) {
@@ -716,6 +743,8 @@ sub Einformixv6als::split(;$$$) {
         else {
             my $last_subexpression_offsets = _last_subexpression_offsets($pattern);
             while ((--$limit > 0) and (CORE::length($string) > 0)) {
+
+                #                              V
                 if ($string =~ s/\A((?:$q_char)*?)$pattern//m) {
                     local $@;
                     for (my $digit=1; $digit <= ($last_subexpression_offsets + 1); $digit++) {
@@ -1280,17 +1309,14 @@ sub Einformixv6als::classic_character_class {
         # Before Perl 5.6, \s only matched the five whitespace characters
         # tab, newline, form-feed, carriage return, and the space character
         # itself, which, taken together, is the character class [\t\n\f\r ].
-        # We can still use the ASCII whitespace semantics using this
-        # software.
 
-                 # \t  \n  \f  \r space
-        '\s' => '[\x09\x0A\x0C\x0D\x20]',
-
-        # Incompatible Changes
-        # \s in regular expressions now matches a Vertical Tab (experimental)
-        # http://search.cpan.org/~zefram/perl-5.17.0/pod/perldelta.pod
-
+        # Vertical tabs are now whitespace
+        # \s in a regex now matches a vertical tab in all circumstances.
+        # http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#Vertical_tabs_are_now_whitespace
+        #            \t  \n  \v  \f  \r space
+        # '\s' => '[\x09\x0A    \x0C\x0D\x20]',
         # '\s' => '[\x09\x0A\x0B\x0C\x0D\x20]',
+        '\s'   => '\s',
 
         '\w' => '[0-9A-Z_a-z]',
         '\C' => '[\x00-\xFF]',
@@ -1956,14 +1982,13 @@ sub _charlist {
                 '\e' => "\e",
                 '\d' => '[0-9]',
 
-                         # \t  \n  \f  \r space
-                '\s' => '[\x09\x0A\x0C\x0D\x20]',
-
-                # Incompatible Changes
-                # \s in regular expressions now matches a Vertical Tab (experimental)
-                # http://search.cpan.org/~zefram/perl-5.17.0/pod/perldelta.pod
-
+                # Vertical tabs are now whitespace
+                # \s in a regex now matches a vertical tab in all circumstances.
+                # http://search.cpan.org/dist/perl-5.18.0/pod/perldelta.pod#Vertical_tabs_are_now_whitespace
+                #            \t  \n  \v  \f  \r space
+                # '\s' => '[\x09\x0A    \x0C\x0D\x20]',
                 # '\s' => '[\x09\x0A\x0B\x0C\x0D\x20]',
+                '\s'   => '\s',
 
                 '\w' => '[0-9A-Z_a-z]',
                 '\D' => '${Einformixv6als::eD}',
@@ -2003,7 +2028,21 @@ sub _charlist {
                 '[:lower:]'   => '[\x61-\x7A]',
                 '[:print:]'   => '[\x20-\x7F]',
                 '[:punct:]'   => '[\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E]',
-                '[:space:]'   => '[\x09\x0A\x0B\x0C\x0D\x20]',
+
+                # P.174 POSIX-Style Character Classes
+                # in Chapter 5: Pattern Matching
+                # of ISBN 0-596-00027-8 Programming Perl Third Edition.
+
+                # P.311 11.2.4 Character Classes and other Special Escapes
+                # in Chapter 11: perlre: Perl regular expressions
+                # of ISBN-13: 978-1-906966-02-7 The Perl Language Reference Manual (for Perl version 5.12.1)
+
+                # P.210 POSIX-Style Character Classes
+                # in Chapter 5: Pattern Matching
+                # of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
+
+                '[:space:]'   => '[\s\x0B]', # "\s" plus vertical tab ("\cK")
+
                 '[:upper:]'   => '[\x41-\x5A]',
                 '[:word:]'    => '[\x30-\x39\x41-\x5A\x5F\x61-\x7A]',
                 '[:xdigit:]'  => '[\x30-\x39\x41-\x46\x61-\x66]',
@@ -2391,7 +2430,7 @@ sub charlist_not_qr {
 #
 sub _open_r {
     my(undef,$file) = @_;
-    $file =~ s#\A ([\x09\x0A\x0C\x0D\x20]) #./$1#oxms;
+    $file =~ s#\A (\s) #./$1#oxms;
     return eval(q{open($_[0],'<',$_[1])}) ||
                   open($_[0],"< $file\0");
 }
@@ -2401,7 +2440,7 @@ sub _open_r {
 #
 sub _open_w {
     my(undef,$file) = @_;
-    $file =~ s#\A ([\x09\x0A\x0C\x0D\x20]) #./$1#oxms;
+    $file =~ s#\A (\s) #./$1#oxms;
     return eval(q{open($_[0],'>',$_[1])}) ||
                   open($_[0],"> $file\0");
 }
@@ -2411,7 +2450,7 @@ sub _open_w {
 #
 sub _open_a {
     my(undef,$file) = @_;
-    $file =~ s#\A ([\x09\x0A\x0C\x0D\x20]) #./$1#oxms;
+    $file =~ s#\A (\s) #./$1#oxms;
     return eval(q{open($_[0],'>>',$_[1])}) ||
                   open($_[0],">> $file\0");
 }
@@ -4245,7 +4284,7 @@ sub Einformixv6als::glob_() {
 }
 
 #
-# INFORMIX V6 ALS path globbing from File::DosGlob module
+# INFORMIX V6 ALS path globbing via File::DosGlob 1.10
 #
 # Often I confuse "_dosglob" and "_doglob".
 # So, I renamed "_dosglob" to "_DOS_like_glob".
@@ -4271,13 +4310,13 @@ sub _DOS_like_glob {
     # DOS-like system
     if ($^O =~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
         $expr =~ s{ \A ~ (?= [^/\\] ) }
-                  { $ENV{'HOME'} || $ENV{'USERPROFILE'} || "$ENV{'HOMEDRIVE'}$ENV{'HOMEPATH'}" }oxmse;
+                  { my_home_MSWin32() }oxmse;
     }
 
     # UNIX-like system
     else {
         $expr =~ s{ \A ~ ( (?:\xFD[\xA1-\xFE][\xA1-\xFE]|[\x81-\x9F\xE0-\xFC][\x00-\xFF]|[^\x81-\x9F\xE0-\xFD/])* ) }
-                  { $1 ? (getpwnam($1))[7] : ($ENV{'HOME'} || $ENV{'LOGDIR'} || (getpwuid($<))[7]) }oxmse;
+                  { $1 ? (getpwnam($1))[7] : my_home() }oxmse;
     }
 
     # assume global context if not provided one
@@ -4501,6 +4540,62 @@ sub _parse_path {
     my $tail = pop @subpath;
     my $head = join $pathsep, @subpath;
     return $head, $tail;
+}
+
+#
+# via File::HomeDir::Windows 1.00
+#
+sub my_home_MSWin32 {
+
+    # A lot of unix people and unix-derived tools rely on
+    # the ability to overload HOME. We will support it too
+    # so that they can replace raw HOME calls with File::HomeDir.
+    if (exists $ENV{'HOME'} and $ENV{'HOME'}) {
+        return $ENV{'HOME'};
+    }
+
+    # Do we have a user profile?
+    elsif (exists $ENV{'USERPROFILE'} and $ENV{'USERPROFILE'}) {
+        return $ENV{'USERPROFILE'};
+    }
+
+    # Some Windows use something like $ENV{'HOME'}
+    elsif (exists $ENV{'HOMEDRIVE'} and exists $ENV{'HOMEPATH'} and $ENV{'HOMEDRIVE'} and $ENV{'HOMEPATH'}) {
+        return join '', $ENV{'HOMEDRIVE'}, $ENV{'HOMEPATH'};
+    }
+
+    return undef;
+}
+
+#
+# via File::HomeDir::Unix 1.00
+#
+sub my_home {
+    my $home;
+
+    if (exists $ENV{'HOME'} and defined $ENV{'HOME'}) {
+        $home = $ENV{'HOME'};
+    }
+
+    # This is from the original code, but I'm guessing
+    # it means "login directory" and exists on some Unixes.
+    elsif (exists $ENV{'LOGDIR'} and $ENV{'LOGDIR'}) {
+        $home = $ENV{'LOGDIR'};
+    }
+
+    ### More-desperate methods
+
+    # Light desperation on any (Unixish) platform
+    else {
+        $home = (getpwuid($<))[7];
+    }
+
+    # On Unix in general, a non-existant home means "no home"
+    # For example, "nobody"-like users might use /nonexistant
+    if (defined $home and ! Einformixv6als::d($home)) {
+        $home = undef;
+    }
+    return $home;
 }
 
 #
@@ -5459,42 +5554,92 @@ sub INFORMIXV6ALS::length(;$) {
 #
 # INFORMIX V6 ALS substr by character
 #
-sub INFORMIXV6ALS::substr($$;$$) {
+BEGIN {
 
-    my @char = $_[0] =~ /\G ($q_char) /oxmsg;
+    # P.232 The lvalue Attribute
+    # in Chapter 6: Subroutines
+    # of ISBN 0-596-00027-8 Programming Perl Third Edition.
 
-    # substr($string,$offset,$length,$replacement)
-    if (@_ == 4) {
-        my(undef,$offset,$length,$replacement) = @_;
-        my $substr = join '', splice(@char, $offset, $length, $replacement);
-        $_[0] = join '', @char;
-        return $substr;
-    }
+    # P.336 The lvalue Attribute
+    # in Chapter 7: Subroutines
+    # of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
 
-    # substr($string,$offset,$length)
-    elsif (@_ == 3) {
-        my(undef,$offset,$length) = @_;
-        if ($length == 0) {
-            return '';
+    # P.144 8.4 Lvalue subroutines
+    # in Chapter 8: perlsub: Perl subroutines
+    # of ISBN-13: 978-1-906966-02-7 The Perl Language Reference Manual (for Perl version 5.12.1)
+
+    eval sprintf(<<'END', ($] >= 5.014000) ? ':lvalue' : '');
+    #                       vv----------------*******
+    sub INFORMIXV6ALS::substr($$;$$) %s {
+
+        my @char = $_[0] =~ /\G ($q_char) /oxmsg;
+
+        # If the substring is beyond either end of the string, substr() returns the undefined
+        # value and produces a warning. When used as an lvalue, specifying a substring that
+        # is entirely outside the string raises an exception.
+        # http://perldoc.perl.org/functions/substr.html
+
+        # A return with no argument returns the scalar value undef in scalar context,
+        # an empty list () in list context, and (naturally) nothing at all in void
+        # context.
+
+        my $offset = $_[1];
+        if (($offset > scalar(@char)) or ($offset < (-1 * scalar(@char)))) {
+            return;
         }
-        if ($offset >= 0) {
-            return join '', (@char[$offset            .. $#char])[0 .. $length-1];
+
+        # substr($string,$offset,$length,$replacement)
+        if (@_ == 4) {
+            my(undef,undef,$length,$replacement) = @_;
+            my $substr = join '', splice(@char, $offset, $length, $replacement);
+            $_[0] = join '', @char;
+
+            # return $substr; this doesn't work, don't say "return"
+            $substr;
         }
+
+        # substr($string,$offset,$length)
+        elsif (@_ == 3) {
+            my(undef,undef,$length) = @_;
+            my $octet_offset = 0;
+            my $octet_length = 0;
+            if ($offset == 0) {
+                $octet_offset = 0;
+            }
+            elsif ($offset > 0) {
+                $octet_offset =      CORE::length(join '', @char[0..$offset-1]);
+            }
+            else {
+                $octet_offset = -1 * CORE::length(join '', @char[$#char+$offset+1..$#char]);
+            }
+            if ($length == 0) {
+                $octet_length = 0;
+            }
+            elsif ($length > 0) {
+                $octet_length =      CORE::length(join '', @char[$offset..$offset+$length-1]);
+            }
+            else {
+                $octet_length = -1 * CORE::length(join '', @char[$#char+$length+1..$#char]);
+            }
+            CORE::substr($_[0], $octet_offset, $octet_length);
+        }
+
+        # substr($string,$offset)
         else {
-            return join '', (@char[($#char+$offset+1) .. $#char])[0 .. $length-1];
+            my $octet_offset = 0;
+            if ($offset == 0) {
+                $octet_offset = 0;
+            }
+            elsif ($offset > 0) {
+                $octet_offset =      CORE::length(join '', @char[0..$offset-1]);
+            }
+            else {
+                $octet_offset = -1 * CORE::length(join '', @char[$#char+$offset+1..$#char]);
+            }
+            CORE::substr($_[0], $octet_offset);
         }
     }
-
-    # substr($string,$offset)
-    else {
-        my(undef,$offset) = @_;
-        if ($offset >= 0) {
-            return join '', @char[$offset            .. $#char];
-        }
-        else {
-            return join '', @char[($#char+$offset+1) .. $#char];
-        }
-    }
+END
 }
 
 #
