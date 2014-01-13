@@ -1,14 +1,12 @@
 NAME
 
-       Char::INFORMIXV6ALS - Source code filter for INFORMIX V6 ALS script (Imitation JPerl)
+       INFORMIXV6ALS - Source code filter for INFORMIX V6 ALS script (Imitation JPerl)
 
 SYNOPSIS
 
     In your script:
 
-      use Char::INFORMIXV6ALS; # CPAN formal style
-         or
-      use INFORMIXV6ALS; # casual style
+      use INFORMIXV6ALS;
 
     At command prompt:
 
